@@ -37,6 +37,9 @@ pub(crate) mod char_traits;
 pub(crate) mod debug;
 pub mod parser;
 pub mod scanner;
+pub mod writer;
+mod scalar;
 
 pub use crate::parser::{Event, EventReceiver, MarkedEventReceiver, Parser, Tag};
 pub use crate::scanner::{Marker, ScanError, TScalarStyle};
+pub use crate::scalar::ScalarValue;
