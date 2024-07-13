@@ -54,7 +54,7 @@ impl StackFrameRun for StartFrame {
                 parent.stack_push(StackFrame::Docs(DocsFrame::new(true)));
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::Start, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::Start, &event)),
         }
     }
 }
@@ -71,7 +71,7 @@ impl EndFrame {
 impl StackFrameRun for EndFrame {
     fn run(&self, _parent: &mut YamlWriter, event: WriteEvent) -> WriteResult {
         match event {
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::End, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::End, &event)),
         }
     }
 }
@@ -105,7 +105,7 @@ impl StackFrameRun for DocsFrame {
                 parent.stack_push(StackFrame::End(EndFrame::new()));
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::DocumentList, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::DocumentList, &event)),
         }
     }
 }
@@ -130,7 +130,7 @@ impl StackFrameRun for DocFrame {
             WriteEvent::DocumentEnd => {
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::Document, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::Document, &event)),
         }
     }
 }
@@ -150,7 +150,7 @@ impl StackFrameRun for DocEndFrame {
             WriteEvent::DocumentEnd => {
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::DocumentEnd, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::DocumentEnd, &event)),
         }
     }
 }
@@ -208,7 +208,7 @@ impl StackFrameRun for SequenceFrame {
                 }
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::Sequence, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::Sequence, &event)),
         }
     }
 }
@@ -253,7 +253,7 @@ impl StackFrameRun for MappingFrame {
                 }
                 Ok(())
             },
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::Mapping, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::Mapping, &event)),
         }
     }
 }
@@ -283,7 +283,7 @@ impl StackFrameRun for MappingItemValueFrame {
                 run_val(parent, event, self.complex_key)?;
                 Ok(())
             }
-            _ => Err(WriteError::new_state_error(WriteStateErrorType::MappingEntryValue, event)),
+            _ => Err(WriteError::new_state_error(WriteStateErrorType::MappingEntryValue, &event)),
         }
     }
 }
@@ -323,7 +323,7 @@ impl StackFrameRun for ValSequenceFrame {
         let is_empty = match event {
             WriteEvent::SequenceStart | WriteEvent::MappingStart | WriteEvent::Scalar(_) => false,
             WriteEvent::SequenceEnd => true,
-            _ => return Err(WriteError::new_state_error(WriteStateErrorType::Sequence, event)),
+            _ => return Err(WriteError::new_state_error(WriteStateErrorType::Sequence, &event)),
         };
 
         if (self.inline && parent.is_compact()) || is_empty {
@@ -355,7 +355,7 @@ impl StackFrameRun for ValMappingFrame {
         let is_empty = match event {
             WriteEvent::SequenceStart | WriteEvent::MappingStart | WriteEvent::Scalar(_) => false,
             WriteEvent::MappingEnd => true,
-            _ => return Err(WriteError::new_state_error(WriteStateErrorType::Mapping, event)),
+            _ => return Err(WriteError::new_state_error(WriteStateErrorType::Mapping, &event)),
         };
 
         if (self.inline && parent.is_compact()) || is_empty {

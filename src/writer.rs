@@ -4,6 +4,7 @@
 
 mod write_error;
 mod write_event;
+mod write_event_type;
 mod write_stack;
 mod writer_state_error;
 
@@ -100,7 +101,7 @@ impl YamlWriter<'_> {
                 }
                 result
             },
-            None => Err(WriteError::new_state_error(WriteStateErrorType::ExistingError, event)),
+            None => Err(WriteError::new_state_error(WriteStateErrorType::ExistingError, &event)),
         }
     }
 

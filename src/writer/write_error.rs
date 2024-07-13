@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::{self, Display}};
 
-use super::{writer_state_error::{WriteStateErrorType, WriterStateError}, WriteEvent};
+use super::{write_event_type::WriteEventType, writer_state_error::{WriteStateErrorType, WriterStateError}, WriteEvent};
 
 /// An error when writing YAML.
 #[derive(Clone, Debug)]
@@ -12,8 +12,9 @@ pub enum WriteError {
 }
 
 impl WriteError {
-    pub(crate) fn new_state_error(state_type: WriteStateErrorType, event: WriteEvent) -> WriteError {
-        WriteError::StateError(WriterStateError{state_type, event})
+    pub(crate) fn new_state_error(state_type: WriteStateErrorType, event: &WriteEvent) -> WriteError {
+        let event_type = WriteEventType::from_event(event);
+        WriteError::StateError(WriterStateError{state_type, event_type})
     }
 }
 

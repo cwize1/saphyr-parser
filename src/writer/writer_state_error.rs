@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::{self, Display}};
 
-use super::WriteEvent;
+use super::write_event_type::WriteEventType;
 
 #[derive(Copy, Clone, Debug)]
 pub enum WriteStateErrorType {
@@ -35,12 +35,12 @@ pub enum WriteStateErrorType {
 #[derive(Clone, Debug)]
 pub struct WriterStateError {
     pub state_type: WriteStateErrorType,
-    pub event: WriteEvent,
+    pub event_type: WriteEventType,
 }
 
 impl WriterStateError {
-    pub fn new(state_type: WriteStateErrorType, event: WriteEvent) -> WriterStateError {
-        WriterStateError{state_type, event}
+    pub fn new(state_type: WriteStateErrorType, event_type: WriteEventType) -> WriterStateError {
+        WriterStateError{state_type, event_type}
     }
 }
 
@@ -66,7 +66,7 @@ impl Display for WriterStateError {
         };
         formatter.write_str(expecting)?;
         formatter.write_str(", got: ")?;
-        Display::fmt(&self.event, formatter)?;
+        Display::fmt(&self.event_type, formatter)?;
         Ok(())
     }
 }

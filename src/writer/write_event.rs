@@ -5,7 +5,7 @@ use crate::{Event, ScalarValue};
 /// Contains information for the next node to write to the YAML document.
 #[derive(Clone, PartialEq, Debug, Eq)]
 #[repr(usize)]
-pub enum WriteEvent {
+pub enum WriteEvent<'a> {
     /// Reserved for internal use.
     Nothing,
     /// Event generated at the very beginning of parsing.
@@ -25,10 +25,10 @@ pub enum WriteEvent {
     /// The end of a YAML mapping (object, hash).
     MappingEnd,
     /// A value.
-    Scalar(ScalarValue),
+    Scalar(ScalarValue<'a>),
 }
 
-impl Display for WriteEvent {
+impl Display for WriteEvent<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
             WriteEvent::Nothing => formatter.write_str("Nothing"),
@@ -45,8 +45,8 @@ impl Display for WriteEvent {
     }
 }
 
-impl Into<WriteEvent> for Event {
-    fn into(self) -> WriteEvent {
+impl Into<WriteEvent<'_>> for Event {
+    fn into(self) -> WriteEvent<'static> {
         match self {
             Event::Nothing => WriteEvent::Nothing,
             Event::StreamStart => WriteEvent::StreamStart,

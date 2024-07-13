@@ -1,14 +1,14 @@
-use std::fmt::{self, Display};
+use std::{borrow::Cow, fmt::{self, Display}};
 
 use crate::{TScalarStyle, Tag};
 
 /// Contains information for YAML scalar values.
 #[derive(Clone, PartialEq, Debug, Eq)]
-pub enum ScalarValue {
+pub enum ScalarValue<'a> {
     /// A number value.
-    Real(String),
+    Real(Cow<'a, str>),
     /// A string value.
-    String(String),
+    String(Cow<'a, str>),
     /// A boolean value.
     Boolean(bool),
     /// An integer value.
@@ -19,10 +19,11 @@ pub enum ScalarValue {
     BadValue,
 }
 
-impl ScalarValue {
-    pub fn from_scalar_event(value: String, style: TScalarStyle, _anchor_id: usize, tag: Option<Tag>) -> ScalarValue {
+impl ScalarValue<'_> {
+    /// Converts a [`crate::Event::Scalar`] event data into a scalar value.
+    pub fn from_scalar_event(value: String, style: TScalarStyle, _anchor_id: usize, tag: Option<Tag>) -> ScalarValue<'static> {
         if style != TScalarStyle::Plain {
-            ScalarValue::String(value)
+            ScalarValue::String(Cow::Owned(value))
         } else if let Some(Tag {
             ref handle,
             ref suffix,
@@ -42,28 +43,28 @@ impl ScalarValue {
                         Ok(v) => ScalarValue::Integer(v),
                     },
                     "float" => match Self::parse_f64(&value) {
-                        Some(_) => ScalarValue::Real(value),
+                        Some(_) => ScalarValue::Real(Cow::Owned(value)),
                         None => ScalarValue::BadValue,
                     },
                     "null" => match value.as_ref() {
                         "~" | "null" => ScalarValue::Null,
                         _ => ScalarValue::BadValue,
                     },
-                    _ => ScalarValue::String(value),
+                    _ => ScalarValue::String(Cow::Owned(value)),
                 }
             } else {
-                ScalarValue::String(value)
+                ScalarValue::String(Cow::Owned(value))
             }
         } else {
             // Datatype is not specified, or unrecognized
-            ScalarValue::from_str(&value)
+            ScalarValue::from_string(value)
         }
     }
 
-    /// Convert a string to a [`ScalarValue`] node.
+    /// Convert a reference string to a [`ScalarValue`] node.
     ///
-    /// [`Yaml`] does not implement [`std::str::FromStr`] since conversion may not fail. This
-    /// function falls back to [`Yaml::String`] if nothing else matches.
+    /// [`ScalarValue`] does not implement [`std::str::FromStr`] since conversion may not fail. This
+    /// function falls back to [`ScalarValue::String`] if nothing else matches.
     ///
     /// # Examples
     /// ```
@@ -79,6 +80,16 @@ impl ScalarValue {
     /// ```
     #[must_use]
     pub fn from_str(v: &str) -> ScalarValue {
+        Self::from_cow_str(Cow::Borrowed(v))
+    }
+
+    /// Convert a string to a [`ScalarValue`] node.
+    pub fn from_string(v: String) -> ScalarValue<'static> {
+        Self::from_cow_str(Cow::Owned(v))
+    }
+
+    /// Convert a string or a reference string to a [`ScalarValue`] node.
+    pub fn from_cow_str<'a>(v: Cow<'a, str>) -> ScalarValue<'a> {
         if let Some(number) = v.strip_prefix("0x") {
             if let Ok(i) = i64::from_str_radix(number, 16) {
                 return ScalarValue::Integer(i);
@@ -92,17 +103,17 @@ impl ScalarValue {
                 return ScalarValue::Integer(i);
             }
         }
-        match v {
+        match v.as_ref() {
             "~" | "null" => ScalarValue::Null,
             "true" => ScalarValue::Boolean(true),
             "false" => ScalarValue::Boolean(false),
             _ => {
                 if let Ok(integer) = v.parse::<i64>() {
                     ScalarValue::Integer(integer)
-                } else if Self::parse_f64(v).is_some() {
-                    ScalarValue::Real(v.to_owned())
+                } else if Self::parse_f64(v.as_ref()).is_some() {
+                    ScalarValue::Real(v)
                 } else {
-                    ScalarValue::String(v.to_owned())
+                    ScalarValue::String(v)
                 }
             }
         }
@@ -121,7 +132,7 @@ impl ScalarValue {
 
 }
 
-impl Display for ScalarValue {
+impl Display for ScalarValue<'_> {
     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         match self {
             ScalarValue::Real(value) => Display::fmt(value, formatter),
