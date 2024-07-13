@@ -54,6 +54,10 @@ impl StackFrameRun for StartFrame {
                 parent.stack_push(StackFrame::Docs(DocsFrame::new(true)));
                 Ok(())
             },
+            WriteEvent::DocumentStart => {
+                DocsFrame::new(true).run(parent, event)?;
+                Ok(())
+            }
             _ => Err(WriteError::new_state_error(WriteStateErrorType::Start, &event)),
         }
     }
