@@ -1,13 +1,16 @@
 use saphyr_parser::{writer::YamlWriter, Parser};
 
 #[test]
-#[allow(clippy::too_many_lines)]
 fn test_round_trip_single_doc_string_value() {
     round_trip_test("a", "a", true, true);
 }
 
 #[test]
-#[allow(clippy::too_many_lines)]
+fn test_round_trip_multi_docs_string_values() {
+    round_trip_test("---\na\n---\nb\n---\nc", "a\n---\nb\n---\nc", true, true);
+}
+
+#[test]
 fn test_round_trip_json_list() {
     let expected = r"- 1
 - 2
@@ -16,9 +19,43 @@ fn test_round_trip_json_list() {
 }
 
 #[test]
-#[allow(clippy::too_many_lines)]
-fn test_round_trip_multi_docs_string_values() {
-    round_trip_test("---\na\n---\nb\n---\nc", "a\n---\nb\n---\nc", true, true);
+fn test_round_trip_yaml_list() {
+    let input = r"- 1
+- 2
+- 3";
+    round_trip_test(input, input, true, true);
+}
+
+#[test]
+fn test_round_trip_json_object_nested() {
+    let input = "{\"a\":\"b\",\"c\":{\"d\":\"e\"}}";
+    let expected = r"a: b
+c:
+  d: e";
+    round_trip_test(input, expected, true, true);
+}
+
+#[test]
+fn test_round_trip_yaml_objects_and_lists() {
+    let input = r"a:
+  - b: c
+    d:
+      - e
+      - f: g
+        h:
+          i: j
+          k:
+            - l
+            - m: ~
+              n: o";
+    round_trip_test(input, input, true, true);
+}
+
+#[test]
+fn test_round_trip_yaml_empty_objects_and_lists() {
+    let input = r"a: []
+b: {}";
+    round_trip_test(input, input, true, true);
 }
 
 fn round_trip_test(input: &str, expected: &str, compact: bool, multiline: bool) {
