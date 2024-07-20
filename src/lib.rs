@@ -42,4 +42,4 @@ mod scalar;
 
 pub use crate::parser::{Event, EventReceiver, MarkedEventReceiver, Parser, Tag};
 pub use crate::scanner::{Marker, ScanError, TScalarStyle};
-pub use crate::scalar::ScalarValue;
+pub use crate::scalar::{ScalarValue, parse_f64};

@@ -42,7 +42,7 @@ impl ScalarValue<'_> {
                         Err(_) => ScalarValue::BadValue,
                         Ok(v) => ScalarValue::Integer(v),
                     },
-                    "float" => match Self::parse_f64(&value) {
+                    "float" => match parse_f64(&value) {
                         Some(_) => ScalarValue::Real(Cow::Owned(value)),
                         None => ScalarValue::BadValue,
                     },
@@ -110,7 +110,7 @@ impl ScalarValue<'_> {
             _ => {
                 if let Ok(integer) = v.parse::<i64>() {
                     ScalarValue::Integer(integer)
-                } else if Self::parse_f64(v.as_ref()).is_some() {
+                } else if parse_f64(v.as_ref()).is_some() {
                     ScalarValue::Real(v)
                 } else {
                     ScalarValue::String(v)
@@ -118,18 +118,6 @@ impl ScalarValue<'_> {
             }
         }
     }
-
-    // parse f64 as Core schema
-    // See: https://github.com/chyh1990/yaml-rust/issues/51
-    fn parse_f64(v: &str) -> Option<f64> {
-        match v {
-            ".inf" | ".Inf" | ".INF" | "+.inf" | "+.Inf" | "+.INF" => Some(f64::INFINITY),
-            "-.inf" | "-.Inf" | "-.INF" => Some(f64::NEG_INFINITY),
-            ".nan" | "NaN" | ".NAN" => Some(f64::NAN),
-            _ => v.parse::<f64>().ok(),
-        }
-    }
-
 }
 
 impl Display for ScalarValue<'_> {
@@ -142,5 +130,15 @@ impl Display for ScalarValue<'_> {
             ScalarValue::Null => formatter.write_str("~"),
             ScalarValue::BadValue => formatter.write_str("~"),
         }
+    }
+}
+
+/// Parse string as an [Floating Point](https://yaml.org/spec/1.2-old/spec.html#id2804092) number.
+pub fn parse_f64(v: &str) -> Option<f64> {
+    match v {
+        ".inf" | ".Inf" | ".INF" | "+.inf" | "+.Inf" | "+.INF" => Some(f64::INFINITY),
+        "-.inf" | "-.Inf" | "-.INF" => Some(f64::NEG_INFINITY),
+        ".nan" | "NaN" | ".NAN" => Some(f64::NAN),
+        _ => v.parse::<f64>().ok(),
     }
 }

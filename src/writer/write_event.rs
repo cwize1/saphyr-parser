@@ -4,7 +4,6 @@ use crate::{Event, ScalarValue};
 
 /// Contains information for the next node to write to the YAML document.
 #[derive(Clone, PartialEq, Debug, Eq)]
-#[repr(usize)]
 pub enum WriteEvent<'a> {
     /// Reserved for internal use.
     Nothing,
